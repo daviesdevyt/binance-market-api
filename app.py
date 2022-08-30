@@ -1,6 +1,3 @@
-from asyncore import read
-from lib2to3.pgen2.token import OP
-import re
 from typing import Optional
 from urllib import response
 from fastapi import FastAPI
