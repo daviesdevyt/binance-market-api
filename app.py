@@ -1,8 +1,6 @@
 from typing import Optional
-from urllib import response
 from fastapi import FastAPI
 import requests
-from requests import Response
 import json
 
 PERIODS = ["1m", "3m", "5m", "15m", "30m", "1h",
