@@ -7,6 +7,8 @@ PERIODS = ["1m", "3m", "5m", "15m", "30m", "1h",
                     "2h", "4h", "6h", "8h", "12h", "1d", "3d", "1w", "1M"]
 
 def arr2dict(data, keys):
+    if data.get("Error"):
+        return data
     response = []
     for stick in data:
         dict_data = {}
@@ -65,7 +67,13 @@ def exchange_info():
 def market_order_book(symbol: str, limit: Optional[int] = 500):
     if limit not in [5, 10, 20, 50, 100, 500, 1000]:
         return {"Error": "Valid limits are [5, 10, 20, 50, 100, 500, 1000]"}
-    return handle_request("GET", f"/fapi/v1/depth", get_params(symbol=symbol, limit=limit))
+    data = handle_request("GET", f"/fapi/v1/depth", get_params(symbol=symbol, limit=limit))
+    if not data.get("Error"):
+        data["tx-time"] = data["T"]
+        data.pop("T")
+        data.pop("E")
+
+    return 
 
 
 @app.get("/trades/{symbol}")
@@ -82,7 +90,7 @@ def trades(symbol: str, limit: Optional[int] = 500):
 #     return handle_request("GET", "/fapi/v1/historicalTrades", get_params(symbol=symbol, limit=limit, fromId=fromid))
 
 
-@app.get("/candlestick/{symbol}")
+@app.get("/candlestick/{symbol}/{interval}")
 def candlestick(symbol: str, interval: str, startTime: Optional[int]=None, endTime: Optional[int]=None, limit: Optional[int] = 500):
     if interval not in PERIODS:
         return {'Error': "Interval is invalid. Allowed intervals are "+str(PERIODS)}
@@ -111,7 +119,6 @@ def contract_candlestick(pair: str, contract:str, interval: str, startTime: Opti
 
 @app.get("/index-price-candlestick/{pair}/{interval}")
 def index_price_candlestick(pair: str, interval: str, startTime: Optional[int]=None, endTime: Optional[int]=None, limit: Optional[int] = 500):
-    contractTypes = ["PERPETUAL","CURRENT_QUARTER","NEXT_QUARTER"]
     if interval not in PERIODS:
         return {"Error": "The allowed intervals are "+PERIODS}
     if limit > 1500:
