@@ -1,3 +1,5 @@
+from lib2to3.pgen2.token import OP
+from optparse import OptionParser
 from typing import Optional
 from fastapi import FastAPI
 import requests
@@ -7,7 +9,7 @@ PERIODS = ["1m", "3m", "5m", "15m", "30m", "1h",
                     "2h", "4h", "6h", "8h", "12h", "1d", "3d", "1w", "1M"]
 
 def arr2dict(data, keys):
-    if data.get("Error"):
+    if type(data) is dict:
         return data
     response = []
     for stick in data:
@@ -131,6 +133,10 @@ def mark_price_candlestick(pair: str, interval: str, startTime: Optional[int]=No
     keys = ["open-time", "open", "high", "low", "close", "ignore", "close-time"]
     data = handle_request("GET", "/fapi/v1/markPriceKlines", get_params(symbol=pair, interval=interval, startTime=startTime, endTime=endTime, limit=limit))
     return arr2dict(data, keys)
+
+@app.get("/premium-index")
+def mark_price_candlestick(pair: Optional[str]=None):
+    return handle_request("GET", "/fapi/v1/premiumIndex", get_params(symbol=pair))
 
 @app.get("/funding-rate")
 def get_funding_rate(pair:Optional[str]=None,  startTime: Optional[int]=None, endTime: Optional[int]=None, limit: Optional[int] = 100):
